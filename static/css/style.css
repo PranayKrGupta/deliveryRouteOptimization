@@ -119,6 +119,11 @@ body {
     font-size: 1rem;
     background: #f0fdf4;
     transition: all 0.3s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2316a34a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 20px;
 }
 
 .product-input:focus {
@@ -147,6 +152,30 @@ body {
 }
 
 .classify-btn:active {
+    transform: translateY(0);
+}
+
+.reset-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(45deg, #f87171, #ef4444);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+}
+
+.reset-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+    opacity: 0.9;
+}
+
+.reset-btn:active {
     transform: translateY(0);
 }
 
@@ -299,9 +328,28 @@ body {
     color: #1f2937;
     font-size: 14px;
     background: #e0f2fe;
-    padding: 6px 10px;
+    padding: 8px 12px;
     border-radius: 8px;
     border: 1px solid #93c5fd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.remove-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.remove-btn:hover {
+    background: #fee2e2;
+    transform: scale(1.1);
 }
 
 .mode-toggle {

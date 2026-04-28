@@ -12,7 +12,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🌱 Logistics Delivery</h1>
+            <h1>Logistics Delivery</h1>
             <p>Route Optimizer System</p>
         </div>
 
@@ -34,13 +34,40 @@
                     <button class="classify-btn" onclick="submitQueue()">
                         Generate Delivery Route
                     </button>
+                    <button id="resetMapBtn" class="reset-btn" style="margin-top: 10px;">
+                        Reset Map & Queue
+                    </button>
                 </div>
                 <div class="panel-section">
                     <h3 class="panel-title">Customers in queue</h3>
                     <div class="info-box">
-                        Click on any customer node (C1-C6) in the graph to select your location
+                        Click on any customer node in the graph to select your location
                     </div>
                     <ul id="queueCustomerList" class="queue-display"></ul>
+                </div>
+
+                <div class="panel-section">
+                    <h3 class="panel-title">Map Editor</h3>
+                    <div class="input-group">
+                        <label>Add Node:</label>
+                        <select id="nodeType" class="product-input">
+                            <option value="customer">Customer</option>
+                            <option value="junction">Junction</option>
+                        </select>
+                        <input type="text" id="nodeId" class="product-input" placeholder="Node ID (e.g., C7, J9)" style="margin-top: 5px;">
+                        <button class="classify-btn" onclick="addNode()" style="margin-top: 10px; background: linear-gradient(45deg, #3b82f6, #2563eb);">Add Node</button>
+                    </div>
+                    <div class="input-group" style="border-top: 1px solid #d1fae5; padding-top: 15px;">
+                        <label>Add Edge:</label>
+                        <select id="edgeSource" class="product-input" style="margin-bottom: 5px;">
+                            <option value="">Select Source Node</option>
+                        </select>
+                        <select id="edgeTarget" class="product-input">
+                            <option value="">Select Target Node</option>
+                        </select>
+                        <input type="number" id="edgeWeight" class="product-input" placeholder="Weight" style="margin-top: 5px;">
+                        <button class="classify-btn" onclick="addEdge()" style="margin-top: 10px; background: linear-gradient(45deg, #8b5cf6, #7c3aed);">Add Edge</button>
+                    </div>
                 </div>
                 <div class="panel-section">
                     <label class="mode-toggle">

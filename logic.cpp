@@ -1,30 +1,39 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <string>
+#include <map>
+#include <queue>
+#include <set>
+#include <tuple>
+#include <fstream>
+#include <sstream>
+
 using namespace std;
 
 // Graph data (adjacency list)
-map<string, vector<pair<string, int>>> graphData;
+map<string, vector<pair<string, double>>> graphData;
 
 // Dijkstra's algorithm
 vector<string> run_dijkstra(const string& start, const string& target) {
     priority_queue<
-        tuple<int, string, vector<string>>, 
-        vector<tuple<int, string, vector<string>>>, 
-        greater<tuple<int, string, vector<string>>>
+        tuple<double, string, vector<string>>, 
+        vector<tuple<double, string, vector<string>>>, 
+        greater<tuple<double, string, vector<string>>>
     > pq;
 
     set<string> visited;
-    pq.push(make_tuple(0, start, vector<string>()));
+    pq.push(make_tuple(0.0, start, vector<string>()));
 
     while (!pq.empty()) {
         auto top = pq.top();
         pq.pop();
 
-        int cost = get<0>(top);
+        double cost = get<0>(top);
         string node = get<1>(top);
         vector<string> path = get<2>(top);
 
         if (visited.count(node)) continue;
-        visited.insert(node);
+        visited.add(node);
 
         path.push_back(node);
 
@@ -33,9 +42,9 @@ vector<string> run_dijkstra(const string& start, const string& target) {
             return path;
         }
 
-        for (size_t i = 0; i < graphData[node].size(); i++) {
-            string neighbor = graphData[node][i].first;
-            int weight = graphData[node][i].second;
+        for (const auto& edge : graphData[node]) {
+            string neighbor = edge.first;
+            double weight = edge.second;
             if (!visited.count(neighbor)) {
                 pq.push(make_tuple(cost + weight, neighbor, path));
             }
@@ -46,37 +55,36 @@ vector<string> run_dijkstra(const string& start, const string& target) {
 }
 
 int main(int argc, char* argv[]) {
-    if (argc < 3) {
-        cerr << "Usage: " << argv[0] << " start end\n";
+    string start, target, graphFile = "graph.txt";
+
+    if (argc >= 3) {
+        start = argv[1];
+        target = argv[2];
+        if (argc == 4) graphFile = argv[3];
+    } else {
+        cerr << "Usage: " << argv[0] << " <start> <target> [graph_file]\n";
         return 1;
     }
 
-    string start = argv[1];
-    string end   = argv[2];
+    // Load graph from file
+    ifstream file(graphFile);
+    if (!file.is_open()) {
+        cerr << "Error: Could not open graph file " << graphFile << endl;
+        return 1;
+    }
 
-    // ---- Graph initialization ----
-    graphData = {
-        {"W1", {{"J1", 2.1}}},
-        {"J1", {{"W1", 2.1}, {"J2", 1.8}, {"C1", 1.2}, {"J4", 3.2}}},
-        {"J2", {{"J1", 1.8}, {"C2", 1.5}, {"J3", 2.3}, {"J5", 2.7}}},
-        {"J3", {{"J2", 2.3}, {"C3", 1.7}, {"J4", 1.9}, {"J6", 2.9}}},
-        {"J4", {{"J3", 1.9}, {"C4", 1.4}, {"J5", 2.2}, {"J1", 3.2}, {"J7", 3.1}}},
-        {"J5", {{"J4", 2.2}, {"C5", 1.6}, {"J6", 1.8}, {"J2", 2.7}}},
-        {"J6", {{"J5", 1.8}, {"C6", 1.3}, {"J7", 2.4}, {"J3", 2.9}}},
-        {"J7", {{"J6", 2.4}, {"J8", 1.7}, {"J4", 3.1}}},
-        {"J8", {{"J7", 1.7}}},
-        
-        // Customers
-        {"C1", {{"J1", 1.2}, {"J2", 2.1}}},
-        {"C2", {{"J2", 1.5}, {"J3", 1.9}}},
-        {"C3", {{"J3", 1.7}, {"J4", 2.2}}},
-        {"C4", {{"J4", 1.4}, {"J5", 1.8}}},
-        {"C5", {{"J5", 1.6}, {"J6", 2.0}}},
-        {"C6", {{"J6", 1.3}, {"J7", 1.6}}}
-    };
+    string line, u, v;
+    double w;
+    while (getline(file, line)) {
+        stringstream ss(line);
+        if (ss >> u >> v >> w) {
+            graphData[u].push_back({v, w});
+            graphData[v].push_back({u, w}); // Undirected
+        }
+    }
 
     // Run Dijkstra
-    vector<string> path = run_dijkstra(start, end);
+    vector<string> path = run_dijkstra(start, target);
 
     if (path.empty()) {
         cout << "No path found\n";

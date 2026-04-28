@@ -3,24 +3,31 @@ queueArray = [];
 let selectedCustomerNode = null;
 let cy = null;
 
+// Centralized Physics Refresh
+function refreshGraphLayout() {
+    cy.layout({
+        name: 'cose',
+        animate: true,
+        fit: true,
+        idealEdgeLength: 100,
+        nodeRepulsion: 400000,
+        gravity: 0.25
+    }).run();
+}
+
 // Initialize Cytoscape graph
 function initializeGraph() {
     cy = cytoscape({
         container: document.getElementById('cy'),
-
         elements: [
             // Nodes
             { data: { id: 'W1', label: 'Main Warehouse', type: 'warehouse' } },
-
-            // Customers
             { data: { id: 'C1', label: 'Customer 1', type: 'customer' } },
             { data: { id: 'C2', label: 'Customer 2', type: 'customer' } },
             { data: { id: 'C3', label: 'Customer 3', type: 'customer' } },
             { data: { id: 'C4', label: 'Customer 4', type: 'customer' } },
             { data: { id: 'C5', label: 'Customer 5', type: 'customer' } },
             { data: { id: 'C6', label: 'Customer 6', type: 'customer' } },
-
-            // Junctions
             { data: { id: 'J1', label: 'Junction 1', type: 'junction' } },
             { data: { id: 'J2', label: 'Junction 2', type: 'junction' } },
             { data: { id: 'J3', label: 'Junction 3', type: 'junction' } },
@@ -30,7 +37,7 @@ function initializeGraph() {
             { data: { id: 'J7', label: 'Junction 7', type: 'junction' } },
             { data: { id: 'J8', label: 'Junction 8', type: 'junction' } },
 
-            // Edges with weights
+            // Edges
             { data: { id: 'e1', source: 'W1', target: 'J1', weight: 2.1 } },
             { data: { id: 'e2', source: 'J1', target: 'J2', weight: 1.8 } },
             { data: { id: 'e3', source: 'J1', target: 'C1', weight: 1.2 } },
@@ -56,7 +63,6 @@ function initializeGraph() {
             { data: { id: 'e29', source: 'C6', target: 'J7', weight: 1.6 } },
             { data: { id: 'e30', source: 'J4', target: 'J7', weight: 3.1 } }
         ],
-
         style: [
             {
                 selector: 'node',
@@ -142,30 +148,15 @@ function initializeGraph() {
                 }
             }
         ],
-
         layout: {
-            name: 'preset',
-            positions: {
-                'W1': { x: 100, y: 300 },
-                'J1': { x: 200, y: 300 },
-                'J2': { x: 300, y: 200 },
-                'J3': { x: 400, y: 250 },
-                'J4': { x: 500, y: 300 },
-                'J5': { x: 600, y: 200 },
-                'J6': { x: 700, y: 250 },
-                'J7': { x: 800, y: 300 },
-                'J8': { x: 900, y: 350 },
-                'C1': { x: 150, y: 150 },
-                'C2': { x: 250, y: 100 },
-                'C3': { x: 350, y: 150 },
-                'C4': { x: 450, y: 100 },
-                'C5': { x: 550, y: 100 },
-                'C6': { x: 650, y: 150 }
-            }
+            name: 'cose',
+            animate: true,
+            nodeRepulsion: 4500,
+            idealEdgeLength: 100,
+            gravity: 0.25
         }
     });
 
-    // Add click event for customer selection
     cy.on('tap', 'node', function (evt) {
         const node = evt.target;
         if (node.data('type') === 'customer') {
@@ -173,247 +164,296 @@ function initializeGraph() {
         }
     });
 
-    // Add hover tooltips
     cy.on('mouseover', 'node', function (evt) {
-        const node = evt.target;
-        node.style('text-outline-width', '3px');
+        evt.target.style('text-outline-width', '3px');
     });
 
     cy.on('mouseout', 'node', function (evt) {
-        const node = evt.target;
-        node.style('text-outline-width', '2px');
+        evt.target.style('text-outline-width', '2px');
+    });
+
+    updateNodeDropdowns();
+}
+
+function updateNodeDropdowns() {
+    const sourceSelect = document.getElementById('edgeSource');
+    const targetSelect = document.getElementById('edgeTarget');
+
+    if (!sourceSelect || !targetSelect) return;
+
+    // Preserve first placeholder option
+    const placeholderSource = sourceSelect.options[0];
+    const placeholderTarget = targetSelect.options[0];
+
+    sourceSelect.innerHTML = '';
+    targetSelect.innerHTML = '';
+
+    sourceSelect.appendChild(placeholderSource);
+    targetSelect.appendChild(placeholderTarget);
+
+    cy.nodes().forEach(node => {
+        const id = node.id();
+        const label = node.data('label') || id;
+        
+        const optSource = new Option(label, id);
+        const optTarget = new Option(label, id);
+        
+        sourceSelect.add(optSource);
+        targetSelect.add(optTarget);
     });
 }
 
+// Map Editor Logic
+function addNode() {
+    const idInput = document.getElementById('nodeId');
+    const typeSelect = document.getElementById('nodeType');
+    const id = idInput.value.trim();
+    const type = typeSelect.value;
+
+    if (!id) {
+        alert("Error: Node ID cannot be empty.");
+        return;
+    }
+
+    if (cy.getElementById(id).length > 0) {
+        alert(`Error: Node ID "${id}" already exists in the map.`);
+        return;
+    }
+
+    cy.add({
+        group: 'nodes',
+        data: { id: id, label: id, type: type }
+    });
+
+    idInput.value = '';
+    updateNodeDropdowns();
+    refreshGraphLayout();
+    showNotification(`Node ${id} created successfully.`, "success");
+}
+
+function addEdge() {
+    const sourceInput = document.getElementById('edgeSource');
+    const targetInput = document.getElementById('edgeTarget');
+    const weightInput = document.getElementById('edgeWeight');
+
+    const source = sourceInput.value;
+    const target = targetInput.value;
+    const weight = parseFloat(weightInput.value);
+
+    if (!source || !target) {
+        alert("Error: Source and Target IDs are required.");
+        return;
+    }
+
+    if (cy.getElementById(source).length === 0) {
+        alert(`Error: Source node "${source}" does not exist!`);
+        return;
+    }
+
+    if (cy.getElementById(target).length === 0) {
+        alert(`Error: Target node "${target}" does not exist!`);
+        return;
+    }
+
+    if (isNaN(weight) || weight <= 0) {
+        alert("Error: Weight must be a valid number greater than 0.");
+        return;
+    }
+
+    const edgeId = `e_${source}_${target}_${Date.now()}`;
+    cy.add({
+        group: 'edges',
+        data: {
+            id: edgeId,
+            source: source,
+            target: target,
+            weight: weight
+        }
+    });
+
+    sourceInput.value = '';
+    targetInput.value = '';
+    weightInput.value = '';
+
+    refreshGraphLayout();
+    showNotification("Edge created successfully.", "success");
+}
+
+// Queue & Routing Logic
 let optimizationEnabled = false;
 
 function toggleRoutingMode() {
     optimizationEnabled = document.getElementById('modeSwitch').checked;
-    let mes = optimizationEnabled
-            ? "Route Optimization Enabled: Nearest Neighbor algorithm"
-            : "Sequential Mode Enabled: Visiting customers in queue order";
     showNotification(
-        mes,"info"
+        optimizationEnabled ? "Optimized Mode Active" : "Sequential Mode Active",
+        "info"
     );
 }
 
-// Select customer node function
 function selectCustomerNode(node) {
     const nodeId = node.data('id');
-
-    // If the node is already selected, deselect it
     if (selectedCustomerNode === nodeId) {
         node.removeClass('selected');
         selectedCustomerNode = null;
-        showNotification(`Deselected ${node.data('label')}`, 'info');
         return;
     }
-
-    // Deselect any previously selected node
     if (selectedCustomerNode) {
-        const previousNode = cy.getElementById(selectedCustomerNode);
-        previousNode.removeClass('selected');
+        cy.getElementById(selectedCustomerNode).removeClass('selected');
     }
-
-    // Select the new node
     selectedCustomerNode = nodeId;
     node.addClass('selected');
-
-    showNotification('Customer selected: ' + node.data('label'), 'success');
-}
-
-// Submit product function (placeholder for backend integration)
-function submitQueue() {
-    if (queueArray.length === 0) {
-        showNotification("Queue is empty! Add at least one customer and product.", "error");
-        return;
-    }
-
-    updateRouteStatus('processing', 'Processing delivery route...');
-
-    const routeEndpoint = optimizationEnabled ? '/route_optimized' : '/route_sequential';
-
-    fetch(routeEndpoint, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ queue: queueArray })
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.error) {
-                showNotification(data.error, "error");
-                updateRouteStatus('waiting', 'Error processing route');
-                return;
-            }
-            const path = data.path;
-            highlightFullRoute(path);
-            updateRouteStatus('complete', `Route generated via ${optimizationEnabled ? 'Optimized' : 'Sequential'} mode.`);
-
-            document.getElementById('routeInfo').style.display = 'block';
-            document.getElementById('routeDistance').textContent = data.distance + ' km';
-            document.getElementById('routeETA').textContent = data.eta + ' min';
-
-            showNotification("Route calculated!", "success");
-        })
-        .catch(err => {
-            console.error(err);
-            showNotification("Backend error. Please try again.", "error");
-            updateRouteStatus('waiting', 'Waiting for input...');
-        });
+    showNotification(`Customer ${nodeId} selected`, 'success');
 }
 
 function addToQueue() {
-    const product = document.getElementById('productInput').value.trim();
+    const productInput = document.getElementById('productInput');
+    const product = productInput.value.trim();
 
     if (!product || !selectedCustomerNode) {
-        showNotification('Please enter a product and select a customer.', 'error');
+        showNotification('Please enter a product and select a customer node.', 'error');
         return;
     }
 
-    // Check for duplicate customer
-    const alreadyInQueue = queueArray.some(entry => entry.customer === selectedCustomerNode);
-    if (alreadyInQueue) {
-        showNotification(`Customer ${selectedCustomerNode} is already in the queue.`, 'error');
+    if (queueArray.some(e => e.customer === selectedCustomerNode)) {
+        showNotification(`Customer ${selectedCustomerNode} is already in queue.`, 'error');
         return;
     }
 
-    // Add to queue
     queueArray.push({ customer: selectedCustomerNode, product });
-
-    // Visual confirmation
-    const node = cy.getElementById(selectedCustomerNode);
-    node.addClass('selected'); // Visually mark as selected
-
-    // Update queue list visually
-    const queueDisplay = document.getElementById('queueCustomerList');
-    const listItem = document.createElement('li');
-    listItem.textContent = `${selectedCustomerNode} → ${product}`;
-    queueDisplay.appendChild(listItem);
-
-    // Reset input and selection
-    document.getElementById('productInput').value = '';
-    selectedCustomerNode = null;
-
-    showNotification(`Added ${queueArray[queueArray.length - 1].customer} to queue.`, 'success');
-}
-
-// Highlight full route function with animation
-function highlightFullRoute(pathArray) {
-    // Clear previous highlights
-    cy.elements().removeClass('highlighted');
-
-    // Animate route highlighting step by step
-    let currentIndex = 0;
-
-    function animateNextStep() {
-        if (currentIndex >= pathArray.length) {
-            return; // Animation complete
-        }
-
-        // Highlight current nodes
-        const currentNode = cy.getElementById(pathArray[currentIndex]);
-        currentNode.addClass('highlighted');
-
-        // Add pulsing animation to current node
-        currentNode.animate({
-            style: {
-                'width': '80px',
-                'height': '80px'
-            }
-        }, {
-            duration: 300,
-            complete: function () {
-                currentNode.animate({
-                    style: {
-                        'width': currentNode.data('type') === 'warehouse' ? '70px' :
-                            currentNode.data('type') === 'junction' ? '45px' : '60px',
-                        'height': currentNode.data('type') === 'warehouse' ? '70px' :
-                            currentNode.data('type') === 'junction' ? '45px' : '60px'
-                    }
-                }, {
-                    duration: 200
-                });
-            }
-        });
-
-        // Highlight edge to next node
-        if (currentIndex < pathArray.length - 1) {
-            const source = pathArray[currentIndex];
-            const target = pathArray[currentIndex + 1];
-
-            // Find edge between source and target
-            const edge = cy.edges().filter(function (ele) {
-                return (ele.source().id() === source && ele.target().id() === target) ||
-                    (ele.source().id() === target && ele.target().id() === source);
-            });
-
-            setTimeout(() => {
-                edge.addClass('highlighted');
-
-                // Animate edge
-                edge.animate({
-                    style: {
-                        'width': '8px'
-                    }
-                }, {
-                    duration: 300,
-                    complete: function () {
-                        edge.animate({
-                            style: {
-                                'width': '6px'
-                            }
-                        }, {
-                            duration: 200
-                        });
-                    }
-                });
-            }, 150);
-        }
-
-        currentIndex++;
-        setTimeout(animateNextStep, 600); // Next step after 600ms
-    }
-
-    // Start animation
-    animateNextStep();
-}
-
-// Update route status
-function updateRouteStatus(status, message) {
-    const statusDiv = document.getElementById('routeStatus');
-    statusDiv.className = 'status-display status-' + status;
-    statusDiv.textContent = message;
-}
-
-// Show notification
-function showNotification(message, type) {
-    const notification = document.getElementById('notification');
-    notification.textContent = message;
-    notification.className = `notification ${type}`;
-    notification.classList.add('show');
-
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 3000);
-}
-
-// Reset route function
-function resetRoute() {
-    cy.elements().removeClass('highlighted');
+    renderQueue();
+    
+    productInput.value = '';
     selectedCustomerNode = null;
     cy.nodes().removeClass('selected');
-    document.getElementById('selectedCustomerDisplay').style.display = 'none';
-    document.getElementById('routeInfo').style.display = 'none';
-    document.getElementById('productInput').value = '';
-    updateRouteStatus('waiting', 'Waiting for input...');
 }
 
-// Initialize the application
-document.addEventListener('DOMContentLoaded', function () {
-    initializeGraph();
+function removeFromQueue(index) {
+    queueArray.splice(index, 1);
+    renderQueue();
+}
 
+function renderQueue() {
+    const list = document.getElementById('queueCustomerList');
+    list.innerHTML = '';
+    queueArray.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <span>${item.customer}: ${item.product}</span>
+            <button class="remove-btn" onclick="removeFromQueue(${index})">✕</button>
+        `;
+        list.appendChild(li);
+    });
+}
+
+function submitQueue() {
+    if (queueArray.length === 0) {
+        showNotification("Add at least one delivery to the queue.", "error");
+        return;
+    }
+
+    updateRouteStatus('processing', 'Calculating optimal path...');
+
+    // Dynamic Payload Syncing
+    const edges = cy.edges().map(e => ({
+        source: e.data('source'),
+        target: e.data('target'),
+        weight: e.data('weight')
+    }));
+
+    const endpoint = optimizationEnabled ? '/route_optimized' : '/route_sequential';
+
+    fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ queue: queueArray, edges: edges })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) throw new Error(data.error);
+        
+        highlightFullRoute(data.path);
+        updateRouteStatus('complete', 'Route ready!');
+        
+        const info = document.getElementById('routeInfo');
+        info.style.display = 'block';
+        document.getElementById('routeDistance').textContent = data.distance + ' km';
+        document.getElementById('routeETA').textContent = data.eta + ' min';
+    })
+    .catch(err => {
+        showNotification(err.message, "error");
+        updateRouteStatus('waiting', 'Error encountered');
+    });
+}
+
+// Animation Logic
+function highlightFullRoute(path) {
+    cy.elements().removeClass('highlighted');
+    let i = 0;
+    function step() {
+        if (i >= path.length) return;
+        
+        const node = cy.getElementById(path[i]);
+        node.addClass('highlighted');
+        
+        if (i < path.length - 1) {
+            const edge = cy.edges().filter(e => 
+                (e.source().id() === path[i] && e.target().id() === path[i+1]) ||
+                (e.source().id() === path[i+1] && e.target().id() === path[i])
+            );
+            edge.addClass('highlighted');
+        }
+        
+        i++;
+        setTimeout(step, 500);
+    }
+    step();
+}
+
+function updateRouteStatus(status, msg) {
+    const div = document.getElementById('routeStatus');
+    div.className = `status-display status-${status}`;
+    div.textContent = msg;
+}
+
+function showNotification(msg, type) {
+    const n = document.getElementById('notification');
+    n.textContent = msg;
+    n.className = `notification ${type} show`;
+    setTimeout(() => n.classList.remove('show'), 3000);
+}
+
+function resetApplicationState() {
+    // Clear Visuals
+    cy.elements().removeClass('highlighted');
+    cy.nodes().removeClass('selected');
+    selectedCustomerNode = null;
+
+    // Clear Data
+    queueArray = [];
+
+    // Clear UI
+    renderQueue();
+    document.getElementById('productInput').value = '';
+
+    // Reset Status
+    updateRouteStatus('waiting', 'Waiting for input...');
+    document.getElementById('routeInfo').style.display = 'none';
+    document.getElementById('routeDistance').textContent = '-- km';
+    document.getElementById('routeETA').textContent = '-- min';
+
+    showNotification("System state reset successfully", "info");
+}
+
+// Initialization
+document.addEventListener('DOMContentLoaded', () => {
+    initializeGraph();
+    
+    // Attach event listeners
+    const resetBtn = document.getElementById('resetMapBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetApplicationState);
+    }
+    
     // Add Enter key support for product input
     document.getElementById('productInput').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
@@ -422,19 +462,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// Expose functions for backend integration
-window.LogisticsDelivery = {
-    highlightFullRoute: highlightFullRoute,
-    selectCustomerNode: function (nodeId) {
-        const node = cy.getElementById(nodeId);
-        if (node.length > 0) {
-            selectCustomerNode(node);
-        }
-    },
-    resetRoute: resetRoute,
-    getSelectedCustomer: function () {
-        return selectedCustomerNode;
-    },
-    updateRouteStatus: updateRouteStatus,
-    showNotification: showNotification
-};
+// Expose to window for global access (needed for onclick)
+window.addNode = addNode;
+window.addEdge = addEdge;
+window.addToQueue = addToQueue;
+window.removeFromQueue = removeFromQueue;
+window.submitQueue = submitQueue;
+window.toggleRoutingMode = toggleRoutingMode;
+window.refreshGraphLayout = refreshGraphLayout;
+window.updateNodeDropdowns = updateNodeDropdowns;
+window.resetApplicationState = resetApplicationState;
