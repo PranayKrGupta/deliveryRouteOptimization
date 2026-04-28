@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 import heapq
 import os
+import subprocess
 
 app = Flask(__name__)
 
@@ -30,6 +31,33 @@ def run_dijkstra(adj, start, end):
                 heapq.heappush(heap, (cost + weight, neighbor, path))
     return []
 
+def run_cpp_dijkstra(edges, start, end):
+    # Write edges to a temporary file for C++ to read
+    with open("graph.txt", "w") as f:
+        for edge in edges:
+            f.write(f"{edge['source']} {edge['target']} {edge['weight']}\n")
+    
+    # Determine binary (./logic for Linux/Render, logic.exe for Windows)
+    binary = "./logic" if os.name != 'nt' else "logic.exe"
+    
+    try:
+        result = subprocess.run(
+            [binary, start, end, "graph.txt"], 
+            capture_output=True, 
+            text=True, 
+            timeout=5
+        )
+        output_lines = result.stdout.strip().split('\n')
+        path_line = output_lines[-1]
+        if " -> " in path_line:
+            return path_line.split(" -> ")
+    except Exception as e:
+        print(f"C++ execution failed, falling back to Python: {e}")
+    
+    # Fallback to Python if C++ fails
+    adj = build_adj_list(edges)
+    return run_dijkstra(adj, start, end)
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -50,7 +78,7 @@ def route_sequential():
 
     for item in queue:
         customer = item.get("customer")
-        path = run_dijkstra(adj, current_node, customer)
+        path = run_cpp_dijkstra(edges, current_node, customer)
         if not path: continue
         
         for i in range(len(path) - 1):
@@ -87,7 +115,7 @@ def route_optimized():
         best_path = []
 
         for customer in unvisited:
-            path = run_dijkstra(adj, current_node, customer)
+            path = run_cpp_dijkstra(edges, current_node, customer)
             if not path: continue
             
             dist = 0.0
