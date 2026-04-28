@@ -9,8 +9,8 @@ function refreshGraphLayout() {
         name: 'cose',
         animate: true,
         fit: true,
-        idealEdgeLength: 100,
-        nodeRepulsion: 400000,
+        idealEdgeLength: 150,
+        nodeRepulsion: 800000,
         gravity: 0.25
     }).run();
 }
@@ -71,17 +71,18 @@ function initializeGraph() {
                 style: {
                     'background-color': '#e5e7eb',
                     'label': 'data(label)',
-                    'text-valign': 'center',
+                    'text-valign': 'bottom',
                     'text-halign': 'center',
-                    'color': '#1f2937',
-                    'font-size': '12px',
+                    'text-margin-y': 6,
+                    'color': '#ffffff',
+                    'font-size': '14px',
                     'font-weight': 'bold',
-                    'width': '60px',
-                    'height': '60px',
-                    'border-width': '3px',
+                    'width': '40px',
+                    'height': '40px',
+                    'border-width': '2px',
                     'border-color': '#9ca3af',
-                    'text-outline-width': '2px',
-                    'text-outline-color': '#ffffff'
+                    'text-outline-width': 2,
+                    'text-outline-color': '#1e293b'
                 }
             },
             {
@@ -90,8 +91,8 @@ function initializeGraph() {
                     'background-color': '#ef4444',
                     'border-color': '#dc2626',
                     'shape': 'diamond',
-                    'width': '70px',
-                    'height': '70px'
+                    'width': '55px',
+                    'height': '55px'
                 }
             },
             {
@@ -108,21 +109,21 @@ function initializeGraph() {
                     'background-color': '#94a3b8',
                     'border-color': '#64748b',
                     'shape': 'circle',
-                    'width': '40px',
-                    'height': '40px'
+                    'width': '30px',
+                    'height': '30px'
                 }
             },
             {
                 selector: 'edge',
                 style: {
-                    'width': '3px',
-                    'line-color': '#d1d5db',
+                    'width': '4px',
+                    'line-color': '#64748b',
                     'curve-style': 'bezier',
                     'label': 'data(weight)',
-                    'font-size': '15px',
-                    'color': '#6b7280',
+                    'font-size': '14px',
+                    'color': '#ffffff',
                     'text-outline-width': '3px',
-                    'text-outline-color': '#ffffff'
+                    'text-outline-color': '#1e293b'
                 }
             },
             {
@@ -153,8 +154,8 @@ function initializeGraph() {
         layout: {
             name: 'cose',
             animate: true,
-            nodeRepulsion: 4500,
-            idealEdgeLength: 100,
+            nodeRepulsion: 800000,
+            idealEdgeLength: 150,
             gravity: 0.25
         }
     });
