@@ -32,29 +32,44 @@ def run_dijkstra(adj, start, end):
     return []
 
 def run_cpp_dijkstra(edges, start, end):
-    # Write edges to a temporary file for C++ to read
-    with open("graph.txt", "w") as f:
-        for edge in edges:
-            f.write(f"{edge['source']} {edge['target']} {edge['weight']}\n")
-    
-    # Determine binary (./logic for Linux/Render, logic.exe for Windows)
-    binary = "./logic" if os.name != 'nt' else "logic.exe"
+    # Create a unique filename to avoid collisions between concurrent requests
+    import uuid
+    temp_filename = f"graph_{uuid.uuid4().hex}.txt"
     
     try:
+        # 1. Write edges to the unique temporary file
+        with open(temp_filename, "w") as f:
+            for edge in edges:
+                f.write(f"{edge['source']} {edge['target']} {edge['weight']}\n")
+        
+        # 2. Determine binary (./logic for Linux/Render, logic.exe for Windows)
+        binary = "./logic" if os.name != 'nt' else "logic.exe"
+        
+        # 3. Call the binary
         result = subprocess.run(
-            [binary, start, end, "graph.txt"], 
+            [binary, start, end, temp_filename], 
             capture_output=True, 
             text=True, 
             timeout=5
         )
+        
         output_lines = result.stdout.strip().split('\n')
         path_line = output_lines[-1]
         if " -> " in path_line:
             return path_line.split(" -> ")
+            
     except Exception as e:
         print(f"C++ execution failed, falling back to Python: {e}")
     
-    # Fallback to Python if C++ fails
+    finally:
+        # 4. Clean up: Delete the temporary file
+        if os.path.exists(temp_filename):
+            try:
+                os.remove(temp_filename)
+            except:
+                pass
+    
+    # Fallback to Python if C++ fails or returns no path
     adj = build_adj_list(edges)
     return run_dijkstra(adj, start, end)
 
