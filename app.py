@@ -2,8 +2,16 @@ from flask import Flask, request, jsonify, render_template
 import heapq
 import os
 import subprocess
+import mimetypes
+from whitenoise import WhiteNoise
+
+# Ensure .js files are served with the correct MIME type for ES modules
+mimetypes.add_type('application/javascript', '.js')
 
 app = Flask(__name__)
+
+# Use WhiteNoise to serve static files (CSS, JS, etc.) in production (Render)
+app.wsgi_app = WhiteNoise(app.wsgi_app, root='static/', prefix='static/')
 
 def build_adj_list(edges):
     adj = {}

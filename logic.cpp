@@ -33,7 +33,7 @@ vector<string> run_dijkstra(const string& start, const string& target) {
         vector<string> path = get<2>(top);
 
         if (visited.count(node)) continue;
-        visited.add(node);
+        visited.insert(node);
 
         path.push_back(node);
 
