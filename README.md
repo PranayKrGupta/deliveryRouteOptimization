@@ -1,78 +1,94 @@
-# RouteFlow — Logistics Delivery & Route Optimization System
+# 🚚 RouteFlow — Logistics Delivery & Route Optimization
 
-RouteFlow is a high-performance, interactive graph-based application designed to optimize delivery routes for modern e-commerce logistics. It transforms a city network into an animated experience where shortest paths are calculated using **Dijkstra’s Algorithm** and **Nearest Neighbor** heuristics. 
-
-The system visualizes a weighted network of a Main Warehouse, Junctions, and Customer Destinations in the browser. Users can watch the delivery vehicle move across the map in real-time as it processes a delivery queue.
+RouteFlow is a high-performance, interactive graph-based application designed to optimize delivery routes for modern e-commerce logistics. It transforms complex city networks into a sleek, animated experience where shortest paths are calculated using a **Hybrid High-Performance Engine**.
 
 ---
 
-## 🚀 Key Features
-- **Interactive Network Graph:** Powered by **Cytoscape.js**, featuring a Main Warehouse (W1), Customers (C1–C6), and routing Junctions (J1–J8).
-- **Dynamic Delivery Queue:** Add multiple customers to a delivery run with specific product descriptions.
-- **Animated Path Rendering:** Nodes pulse upon arrival and edges highlight during transit to visualize the delivery flow.
-- **Real-time Analytics:** Instant calculation of **Total Travel Distance** and **Estimated Time of Arrival (ETA)**.
-- **Hybrid Backend:** Built with **Python (Flask)** for the web server, featuring an optional **C++ module** for high-speed offline path calculations.
+## ✨ Key Features
 
----
-
-## 🔀 Two Routing Strategies
-RouteFlow offers two distinct logistics modes via a frontend toggle:
-
-1. **Sequential Delivery Mode (Default)**  
-   The system visits customers in the exact order they were added to the queue.  
-   *Path sequence: Warehouse → Customer A → Customer B → Customer C...*
-
-2. **Optimized Delivery Mode (Nearest Neighbor)**  
-   An intelligent routing strategy that re-calculates the queue at every step. The system always travels to the **closest unvisited customer** from its current location to minimize total travel distance.
+- **🌐 Interactive City Logistics Network:** Powered by **Cytoscape.js**, featuring a dynamic graph of warehouses, junctions, and customer destinations.
+- **⚡ Hybrid Routing Engine:** Seamlessly integrates **Python (Flask)** with a **C++ (Dijkstra)** performance core for ultra-fast pathfinding.
+- **🤖 Intelligent Routing Strategies:**
+  - **Sequential Delivery:** Process orders in the exact sequence they are added to the queue.
+  - **Optimized Delivery:** Implements the **Nearest Neighbor Heuristic** to minimize total travel distance in real-time.
+- **🛠️ Dynamic Map Editor:** Build and modify your logistics network on the fly by adding nodes (Customers/Junctions) and connecting them with custom weights.
+- **🎨 Glassmorphism Design System:** 
+  - **Responsive UI** with a modular CSS architecture for maximum performance.
+  - **Theme Support:** Includes **Light Glass**, **Dark Glass**, **Solarized Dark**, and **Solarized Light** modes.
+- **📊 Live Analytics Dashboard:** Real-time calculation of **Total Distance (km)** and **Estimated Time of Arrival (ETA)** with animated vehicle transit pathing.
 
 ---
 
 ## 🛠️ Technology Stack
-- **Frontend:** HTML5, Vanilla CSS (Glassmorphism), JavaScript, Cytoscape.js (Graph Visualization).
-- **Backend:** Python (Flask), `heapq` for Priority Queue implementation.
-- **Algorithms:** Dijkstra's Shortest Path, Nearest Neighbor Heuristic.
-- **Performance:** C++ Dijkstra implementation for offline/standalone execution.
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | HTML5, Modular CSS, Vanilla JavaScript (ES6 Modules) |
+| **Visualization** | Cytoscape.js |
+| **Backend** | Python 3.x (Flask) |
+| **Performance Core** | C++ (Dijkstra's Algorithm) |
+| **Static Assets** | WhiteNoise |
 
 ---
 
 ## ⚙️ System Architecture
 
-1. **Frontend (User Interface):**  
-   Handles user interactions (node selection), builds the delivery queue, and manages the animation engine that highlights paths returned by the backend.
+RouteFlow is designed with a decoupled architecture to ensure scalability and high performance.
 
-2. **Backend (Python/Flask):**  
-   Processes routing requests, maintains the graph adjacency list, and implements the Sequential and Optimized routing logic.
-
-3. **C++ Offline Solver:**  
-   A standalone program (`logic.cpp`) that mirrors the Python graph. It can be used for high-performance route crunching without the web overhead.
+1. **Modular Frontend:** UI logic is encapsulated in specialized ES modules (`graph.js`, `routing.js`, `editor.js`) for clean state management.
+2. **Hybrid Solver:** The Flask backend communicates with a compiled C++ binary to perform Dijkstra calculations, ensuring minimal latency for complex graphs.
 
 ---
 
-## 🏃 How to Run Locally
+## 🏃 Local Setup Guide
 
-### Prerequisites
-- Python 3.x
-- C++ Compiler (e.g., G++)
+### 1. Prerequisites
+- **Python 3.8+**
+- **C++ Compiler** (GCC/G++ or MinGW)
+- **Git**
 
-### Steps
-1. **Activate Environment:**
-   ```powershell
-   .\venv\Scripts\activate
-   ```
-2. **Install Dependencies:**
-   ```powershell
-   pip install -r requirements.txt
-   ```
-3. **Start the Server:**
-   ```powershell
-   python app.py
-   ```
-4. **Compile C++ Logic (Optional):**
-   ```powershell
-   g++ logic.cpp -o logic
-   ```
+### 2. Clone and Install
+```bash
+git clone https://github.com/PranayKrGupta/deliveryRouteOptimization.git
+cd DeliveryRouteOptimization
+```
+
+### 3. Virtual Environment
+```powershell
+# Create venv
+python -m venv venv
+
+# Activate (Windows)
+.\venv\Scripts\activate
+
+# Activate (Linux/Mac)
+source venv/bin/activate
+
+# Install requirements
+pip install -r requirements.txt
+```
+
+### 4. Compile Performance Core (C++)
+The hybrid engine requires the C++ module to be compiled for your specific OS.
+```powershell
+# Windows
+g++ logic.cpp -o logic.exe
+
+# Linux/Mac
+g++ logic.cpp -o logic
+chmod +x logic
+```
+
+### 5. Start Server
+```bash
+python app.py
+```
+Visit `http://localhost:10000` to start optimizing routes.
 
 ---
 
 ## 🌟 Project Rationale
-This project serves as a practical demonstration of how graph theory applies to real-world logistics. By contrasting **Sequential** vs **Optimized** delivery flows, it highlights the efficiency gains of algorithmic pathfinding in supply chain management.
+RouteFlow bridges the gap between Graph Theory and real-world logistics. By allowing users to visualize and manipulate network topology, it demonstrates the tangible impact of algorithmic optimization on supply chain efficiency.
+
+---
+Developed with ❤️ by [Pranay Kumar Gupta](https://github.com/PranayKrGupta)
