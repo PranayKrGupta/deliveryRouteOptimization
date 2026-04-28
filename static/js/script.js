@@ -19,6 +19,8 @@ function refreshGraphLayout() {
 function initializeGraph() {
     cy = cytoscape({
         container: document.getElementById('cy'),
+        boxSelectionEnabled: false,
+        autounselectify: false,
         elements: [
             // Nodes
             { data: { id: 'W1', label: 'Main Warehouse', type: 'warehouse' } },
@@ -95,19 +97,19 @@ function initializeGraph() {
             {
                 selector: 'node[type="customer"]',
                 style: {
-                    'background-color': '#3b82f6',
-                    'border-color': '#2563eb',
+                    'background-color': '#6366f1',
+                    'border-color': '#4f46e5',
                     'shape': 'rectangle'
                 }
             },
             {
                 selector: 'node[type="junction"]',
                 style: {
-                    'background-color': '#8b5cf6',
-                    'border-color': '#7c3aed',
+                    'background-color': '#94a3b8',
+                    'border-color': '#64748b',
                     'shape': 'circle',
-                    'width': '45px',
-                    'height': '45px'
+                    'width': '40px',
+                    'height': '40px'
                 }
             },
             {
@@ -134,16 +136,16 @@ function initializeGraph() {
             {
                 selector: '.highlighted',
                 style: {
-                    'background-color': '#f59e0b',
-                    'border-color': '#d97706',
+                    'background-color': '#10b981',
+                    'border-color': '#059669',
                     'border-width': '5px'
                 }
             },
             {
                 selector: 'edge.highlighted',
                 style: {
-                    'line-color': '#f59e0b',
-                    'target-arrow-color': '#f59e0b',
+                    'line-color': '#10b981',
+                    'target-arrow-color': '#10b981',
                     'width': '6px'
                 }
             }
@@ -449,6 +451,14 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeGraph();
     
     // Attach event listeners
+    const themeSwitcher = document.getElementById('themeSwitcher');
+    if (themeSwitcher) {
+        themeSwitcher.addEventListener('change', (e) => {
+            document.documentElement.setAttribute('data-theme', e.target.value);
+            showNotification(`Theme switched to ${e.target.options[e.target.selectedIndex].text}`, "info");
+        });
+    }
+
     const resetBtn = document.getElementById('resetMapBtn');
     if (resetBtn) {
         resetBtn.addEventListener('click', resetApplicationState);

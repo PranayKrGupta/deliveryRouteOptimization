@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
@@ -11,101 +11,144 @@
 
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Logistics Delivery</h1>
-            <p>Route Optimizer System</p>
-        </div>
+        <header class="header">
+            <div>
+                <h1>Logistics Delivery</h1>
+                <p>Enterprise Route Optimization System</p>
+            </div>
+            <select id="themeSwitcher" class="theme-select">
+                <option value="light">Light Glass</option>
+                <option value="dark">Dark Glass</option>
+                <option value="solarized-dark">Solarized Dark</option>
+                <option value="solarized-light">Solarized Light</option>
+            </select>
+        </header>
 
-        <div class="main-content">
-            <div class="graph-container">
-                <h3 class="graph-title">City Logistics Delivery Network</h3>
-                <div id="cy"></div>
+        <main class="main-content">
+            <!-- Left Column: Map & Editor Dashboard -->
+            <div class="left-column">
+                <section class="card graph-container">
+                    <h3 class="graph-title">City Logistics Network</h3>
+                    <div id="cy"></div>
+                </section>
+
+                <div class="bottom-dashboard">
+                    <!-- Map Editor -->
+                    <div class="card map-editor-card">
+                        <div class="editor-section">
+                            <h3 class="panel-title">🛠️ Add Node</h3>
+                            <div class="input-group">
+                                <label>Node Type</label>
+                                <select id="nodeType" class="product-input">
+                                    <option value="customer">Customer</option>
+                                    <option value="junction">Junction</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Node ID</label>
+                                <input type="text" id="nodeId" class="product-input" placeholder="e.g., C7, J9">
+                            </div>
+                            <button class="btn btn-secondary" onclick="addNode()">Add Node</button>
+                        </div>
+                        
+                        <div class="editor-section connection-section">
+                            <h3 class="panel-title">🔗 Connect Nodes</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div class="input-group">
+                                    <label>Source</label>
+                                    <select id="edgeSource" class="product-input">
+                                        <option value="">Source</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label>Target</label>
+                                    <select id="edgeTarget" class="product-input">
+                                        <option value="">Target</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Weight (km)</label>
+                                <input type="number" id="edgeWeight" class="product-input" placeholder="Distance in km">
+                            </div>
+                            <button class="btn btn-secondary" onclick="addEdge()">Connect Nodes</button>
+                        </div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="card">
+                        <h3 class="panel-title">📍 Legend</h3>
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #ef4444;"></div>
+                                <span>Distribution Center</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #6366f1;"></div>
+                                <span>Customer Point</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #94a3b8;"></div>
+                                <span>Traffic Junction</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="control-panel">
-                <div class="panel-section">
-                    <h3 class="panel-title"> Product Categorization</h3>
+            <!-- Right Column: Controls -->
+            <aside class="control-panel">
+                <!-- Product & Queue Action -->
+                <div class="card">
+                    <h3 class="panel-title">📦 Order Entry</h3>
                     <div class="input-group">
-                        <label for="productInput">Describe your parcel/product:</label>
+                        <label for="productInput">Describe parcel contents</label>
                         <input type="text" id="productInput" class="product-input"
-                            placeholder="e.g., Electronics, Groceries, Apparel, Fragile...">
+                            placeholder="e.g., Electronics, Groceries...">
                     </div>
-                    <button class="queue-btn" onclick="addToQueue()">Add To Queue</button>
-                    <button class="classify-btn" onclick="submitQueue()">
-                        Generate Delivery Route
-                    </button>
-                    <button id="resetMapBtn" class="reset-btn" style="margin-top: 10px;">
-                        Reset Map & Queue
-                    </button>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button class="btn btn-secondary" onclick="addToQueue()">
+                            Add to Delivery Queue
+                        </button>
+                        <button class="btn btn-primary" onclick="submitQueue()">
+                            Generate Optimal Route
+                        </button>
+                        <button id="resetMapBtn" class="btn btn-outline-danger">
+                            Reset Map & Queue
+                        </button>
+                    </div>
                 </div>
-                <div class="panel-section">
-                    <h3 class="panel-title">Customers in queue</h3>
+
+                <!-- Active Queue -->
+                <div class="card">
+                    <h3 class="panel-title">🚚 Delivery Queue</h3>
                     <div class="info-box">
-                        Click on any customer node in the graph to select your location
+                        Select a customer node on the map to set delivery location.
                     </div>
                     <ul id="queueCustomerList" class="queue-display"></ul>
                 </div>
 
-                <div class="panel-section">
-                    <h3 class="panel-title">Map Editor</h3>
-                    <div class="input-group">
-                        <label>Add Node:</label>
-                        <select id="nodeType" class="product-input">
-                            <option value="customer">Customer</option>
-                            <option value="junction">Junction</option>
-                        </select>
-                        <input type="text" id="nodeId" class="product-input" placeholder="Node ID (e.g., C7, J9)" style="margin-top: 5px;">
-                        <button class="classify-btn" onclick="addNode()" style="margin-top: 10px; background: linear-gradient(45deg, #3b82f6, #2563eb);">Add Node</button>
-                    </div>
-                    <div class="input-group" style="border-top: 1px solid #d1fae5; padding-top: 15px;">
-                        <label>Add Edge:</label>
-                        <select id="edgeSource" class="product-input" style="margin-bottom: 5px;">
-                            <option value="">Select Source Node</option>
-                        </select>
-                        <select id="edgeTarget" class="product-input">
-                            <option value="">Select Target Node</option>
-                        </select>
-                        <input type="number" id="edgeWeight" class="product-input" placeholder="Weight" style="margin-top: 5px;">
-                        <button class="classify-btn" onclick="addEdge()" style="margin-top: 10px; background: linear-gradient(45deg, #8b5cf6, #7c3aed);">Add Edge</button>
-                    </div>
-                </div>
-                <div class="panel-section">
+                <!-- Mode Toggle -->
+                <div class="card">
                     <label class="mode-toggle">
                         <input type="checkbox" id="modeSwitch" onchange="toggleRoutingMode()" />
-                        <span class="toggle-label">Enable Route Optimization (Nearest Neighbor)</span>
+                        <span class="toggle-label">Enable Nearest Neighbor Optimization</span>
                     </label>
                 </div>
 
-                <div class="panel-section">
-                    <h3 class="panel-title">Route Status</h3>
+                <!-- Status -->
+                <div class="card">
+                    <h3 class="panel-title">📊 Route Status</h3>
                     <div id="routeStatus" class="status-display status-waiting">
                         Waiting for input...
                     </div>
                     <div id="routeInfo" class="route-info" style="display: none;">
-                        <strong>Route Distance:</strong> <span id="routeDistance">-- km</span><br>
-                        <strong>ETA:</strong> <span id="routeETA">-- min</span>
+                        <p><strong>Distance:</strong> <span id="routeDistance">-- km</span></p>
+                        <p><strong>Est. Time:</strong> <span id="routeETA">-- min</span></p>
                     </div>
                 </div>
-
-                <div class="panel-section">
-                    <h3 class="panel-title">🎯 Legend</h3>
-                    <div class="legend">
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #ef4444;"></div>
-                            <span>Main Warehouse</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #3b82f6;"></div>
-                            <span>Customers</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #8b5cf6;"></div>
-                            <span>Junctions</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+            </aside>
+        </main>
     </div>
 
     <div id="notification" class="notification"></div>
