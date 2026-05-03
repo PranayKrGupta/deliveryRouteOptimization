@@ -40,10 +40,13 @@ export function submitQueue() {
 
     const endpoint = state.optimizationEnabled ? '/route_optimized' : '/route_sequential';
 
+    const speedInput = document.getElementById('vehicleSpeedInput');
+    const speed = speedInput ? parseFloat(speedInput.value) : 24.0;
+
     fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ queue: state.queueArray, edges: edges })
+        body: JSON.stringify({ queue: state.queueArray, edges: edges, speed: speed })
     })
     .then(res => res.json())
     .then(data => {
@@ -54,6 +57,7 @@ export function submitQueue() {
         
         const info = document.getElementById('routeInfo');
         info.style.display = 'block';
+        document.getElementById('routePath').textContent = data.path.join(' → ');
         document.getElementById('routeDistance').textContent = data.distance + ' km';
         document.getElementById('routeETA').textContent = data.eta + ' min';
     })

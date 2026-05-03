@@ -33,8 +33,12 @@ export function updateNodeDropdowns() {
     state.cy.nodes().forEach(node => {
         const id = node.id();
         const label = node.data('label') || id;
+        const type = node.data('type');
         
         elements.forEach(el => {
+            if (el.id === 'deleteNodeSelect' && type === 'warehouse') {
+                return;
+            }
             el.add(new Option(label, id));
         });
     });

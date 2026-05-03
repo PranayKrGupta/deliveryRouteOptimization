@@ -85,6 +85,10 @@ export function removeNode() {
     }
     const node = state.cy.getElementById(id);
     if (node.length > 0) {
+        if (node.data('type') === 'warehouse') {
+            showNotification("Cannot delete the main warehouse.", "error");
+            return;
+        }
         node.remove();
         updateNodeDropdowns();
         refreshGraphLayout();
@@ -123,7 +127,7 @@ export function closeModal() {
 }
 
 export function confirmClearGraph() {
-    state.cy.elements().remove();
+    state.cy.elements().not('[type="warehouse"]').remove();
     updateNodeDropdowns();
     refreshGraphLayout();
     closeModal();

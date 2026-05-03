@@ -143,6 +143,11 @@
                         <input type="text" id="productInput" class="product-input"
                             placeholder="e.g., Electronics, Groceries...">
                     </div>
+                    <div class="input-group">
+                        <label for="vehicleSpeedInput">Vehicle Speed (km/h)</label>
+                        <input type="number" id="vehicleSpeedInput" class="product-input"
+                            placeholder="e.g., 40" value="40" min="1">
+                    </div>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <button class="btn btn-secondary" onclick="addToQueue()">
                             Add to Delivery Queue
@@ -180,6 +185,7 @@
                         Waiting for input...
                     </div>
                     <div id="routeInfo" class="route-info" style="display: none;">
+                        <p><strong>Path:</strong> <span id="routePath" style="word-break: break-all;">--</span></p>
                         <p><strong>Distance:</strong> <span id="routeDistance">-- km</span></p>
                         <p><strong>Est. Time:</strong> <span id="routeETA">-- min</span></p>
                     </div>

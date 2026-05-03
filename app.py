@@ -88,10 +88,12 @@ def route_sequential():
         if full_path: path = path[1:]
         full_path.extend(path)
         current_node = customer
+    speed = float(data.get("speed", 24.0)) # Default to 24 km/h if not provided
+    if speed <= 0: speed = 24.0
     return jsonify({
         "path": full_path,
         "distance": round(total_distance, 2),
-        "eta": round(total_distance * 2.5, 0)
+        "eta": round((total_distance / speed) * 60, 0)
     })
 
 @app.route("/route_optimized", methods=["POST"])
@@ -126,10 +128,12 @@ def route_optimized():
             current_node = nearest_customer
             unvisited.remove(nearest_customer)
         else: break
+    speed = float(data.get("speed", 24.0))
+    if speed <= 0: speed = 24.0
     return jsonify({
         "path": full_path,
         "distance": round(total_distance, 2),
-        "eta": round(total_distance * 2.5, 0)
+        "eta": round((total_distance / speed) * 60, 0)
     })
 
 if __name__ == "__main__":
