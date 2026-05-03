@@ -4,6 +4,9 @@ import os
 import subprocess
 import mimetypes
 from whitenoise import WhiteNoise
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Ensure .js files are served with the correct MIME type for ES modules
 mimetypes.add_type('application/javascript', '.js')
@@ -40,44 +43,25 @@ def run_dijkstra(adj, start, end):
     return []
 
 def run_cpp_dijkstra(edges, start, end):
-    # Create a unique filename to avoid collisions between concurrent requests
     import uuid
     temp_filename = f"graph_{uuid.uuid4().hex}.txt"
-    
     try:
-        # 1. Write edges to the unique temporary file
         with open(temp_filename, "w") as f:
             for edge in edges:
                 f.write(f"{edge['source']} {edge['target']} {edge['weight']}\n")
-        
-        # 2. Determine binary (./logic for Linux/Render, logic.exe for Windows)
         binary = "./logic" if os.name != 'nt' else "logic.exe"
-        
-        # 3. Call the binary
-        result = subprocess.run(
-            [binary, start, end, temp_filename], 
-            capture_output=True, 
-            text=True, 
-            timeout=5
-        )
-        
+        result = subprocess.run([binary, start, end, temp_filename], capture_output=True, text=True, timeout=5)
         output_lines = result.stdout.strip().split('\n')
         path_line = output_lines[-1]
         if " -> " in path_line:
             return path_line.split(" -> ")
-            
     except Exception as e:
         print(f"C++ execution failed, falling back to Python: {e}")
-    
     finally:
-        # 4. Clean up: Delete the temporary file
         if os.path.exists(temp_filename):
-            try:
-                os.remove(temp_filename)
-            except:
-                pass
-    
-    # Fallback to Python if C++ fails or returns no path
+            try: os.remove(temp_filename)
+            except: pass
+            
     adj = build_adj_list(edges)
     return run_dijkstra(adj, start, end)
 
@@ -90,27 +74,20 @@ def route_sequential():
     data = request.json
     queue = data.get("queue", [])
     edges = data.get("edges", [])
-    
-    if not queue:
-        return jsonify({"error": "Queue is empty"}), 400
-    
+    if not queue: return jsonify({"error": "Queue is empty"}), 400
     adj = build_adj_list(edges)
     full_path = []
     current_node = "W1"
     total_distance = 0.0
-
     for item in queue:
         customer = item.get("customer")
         path = run_cpp_dijkstra(edges, current_node, customer)
         if not path: continue
-        
         for i in range(len(path) - 1):
             total_distance += adj[path[i]][path[i+1]]
-            
         if full_path: path = path[1:]
         full_path.extend(path)
         current_node = customer
-
     return jsonify({
         "path": full_path,
         "distance": round(total_distance, 2),
@@ -122,43 +99,33 @@ def route_optimized():
     data = request.json
     queue = data.get("queue", [])
     edges = data.get("edges", [])
-    
-    if not queue:
-        return jsonify({"error": "Queue is empty"}), 400
-
+    if not queue: return jsonify({"error": "Queue is empty"}), 400
     adj = build_adj_list(edges)
     unvisited = [item.get("customer") for item in queue]
     full_path = []
     current_node = "W1"
     total_distance = 0.0
-
     while unvisited:
         nearest_customer = None
         shortest_dist = float('inf')
         best_path = []
-
         for customer in unvisited:
             path = run_cpp_dijkstra(edges, current_node, customer)
             if not path: continue
-            
             dist = 0.0
             for i in range(len(path) - 1):
                 dist += adj[path[i]][path[i+1]]
-            
             if dist < shortest_dist:
                 shortest_dist = dist
                 nearest_customer = customer
                 best_path = path
-
         if nearest_customer:
             total_distance += shortest_dist
             if full_path: best_path = best_path[1:]
             full_path.extend(best_path)
             current_node = nearest_customer
             unvisited.remove(nearest_customer)
-        else:
-            break
-
+        else: break
     return jsonify({
         "path": full_path,
         "distance": round(total_distance, 2),

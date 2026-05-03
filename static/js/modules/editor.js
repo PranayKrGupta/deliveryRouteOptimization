@@ -76,3 +76,56 @@ export function addEdge() {
     refreshGraphLayout();
     showNotification("Edge created successfully.", "success");
 }
+
+export function removeNode() {
+    const id = document.getElementById('deleteNodeSelect').value;
+    if (!id) {
+        showNotification("Please select a node to delete.", "error");
+        return;
+    }
+    const node = state.cy.getElementById(id);
+    if (node.length > 0) {
+        node.remove();
+        updateNodeDropdowns();
+        refreshGraphLayout();
+        showNotification(`Node ${id} deleted successfully.`, "success");
+    }
+}
+
+export function removeEdge() {
+    const source = document.getElementById('deleteEdgeSource').value;
+    const target = document.getElementById('deleteEdgeTarget').value;
+    
+    if (!source || !target) {
+        showNotification("Please select source and target nodes to delete the edge.", "error");
+        return;
+    }
+    
+    const edges = state.cy.edges(`[source = "${source}"][target = "${target}"], [source = "${target}"][target = "${source}"]`);
+    
+    if (edges.length > 0) {
+        edges.remove();
+        refreshGraphLayout();
+        showNotification("Edge deleted successfully.", "success");
+    } else {
+        showNotification("No connecting edge found between these nodes.", "error");
+    }
+}
+
+export function clearGraph() {
+    const modal = document.getElementById('clearGraphModal');
+    if (modal) modal.classList.add('active');
+}
+
+export function closeModal() {
+    const modal = document.getElementById('clearGraphModal');
+    if (modal) modal.classList.remove('active');
+}
+
+export function confirmClearGraph() {
+    state.cy.elements().remove();
+    updateNodeDropdowns();
+    refreshGraphLayout();
+    closeModal();
+    showNotification("Graph cleared entirely.", "success");
+}

@@ -13,29 +13,30 @@ export function refreshGraphLayout() {
 }
 
 export function updateNodeDropdowns() {
-    const sourceSelect = document.getElementById('edgeSource');
-    const targetSelect = document.getElementById('edgeTarget');
+    const selects = [
+        'edgeSource', 'edgeTarget', 
+        'deleteNodeSelect', 'deleteEdgeSource', 'deleteEdgeTarget'
+    ];
+    
+    const elements = selects.map(id => document.getElementById(id)).filter(el => el);
+    
+    if (elements.length === 0) return;
 
-    if (!sourceSelect || !targetSelect) return;
-
-    const placeholderSource = sourceSelect.options[0];
-    const placeholderTarget = targetSelect.options[0];
-
-    sourceSelect.innerHTML = '';
-    targetSelect.innerHTML = '';
-
-    sourceSelect.appendChild(placeholderSource);
-    targetSelect.appendChild(placeholderTarget);
-
+    const placeholders = elements.map(el => el.options[0]);
+    
+    elements.forEach(el => el.innerHTML = '');
+    
+    elements.forEach((el, i) => {
+        if (placeholders[i]) el.appendChild(placeholders[i]);
+    });
+    
     state.cy.nodes().forEach(node => {
         const id = node.id();
         const label = node.data('label') || id;
         
-        const optSource = new Option(label, id);
-        const optTarget = new Option(label, id);
-        
-        sourceSelect.add(optSource);
-        targetSelect.add(optTarget);
+        elements.forEach(el => {
+            el.add(new Option(label, id));
+        });
     });
 }
 

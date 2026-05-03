@@ -1,10 +1,11 @@
 import { state } from './modules/state.js';
 import { showNotification } from './modules/utils.js';
 import { initializeGraph, refreshGraphLayout, updateNodeDropdowns } from './modules/graph.js';
-import { addNode, addEdge } from './modules/editor.js';
+import { addNode, addEdge, removeNode, removeEdge, clearGraph, closeModal, confirmClearGraph } from './modules/editor.js';
 import { addToQueue, removeFromQueue, selectCustomerNode } from './modules/queue.js';
 import { submitQueue } from './modules/routing.js';
-import { toggleRoutingMode, resetApplicationState } from './modules/ui.js';
+import { toggleRoutingMode, resetApplicationState, switchTab } from './modules/ui.js';
+
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
@@ -35,11 +36,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
 });
 
 // Expose to window for global access (needed for legacy HTML onclick handlers)
 window.addNode = addNode;
 window.addEdge = addEdge;
+window.removeNode = removeNode;
+window.removeEdge = removeEdge;
+window.clearGraph = clearGraph;
+window.closeModal = closeModal;
+window.confirmClearGraph = confirmClearGraph;
 window.addToQueue = addToQueue;
 window.removeFromQueue = removeFromQueue;
 window.submitQueue = submitQueue;
@@ -47,3 +54,4 @@ window.toggleRoutingMode = toggleRoutingMode;
 window.refreshGraphLayout = refreshGraphLayout;
 window.updateNodeDropdowns = updateNodeDropdowns;
 window.resetApplicationState = resetApplicationState;
+window.switchTab = switchTab;

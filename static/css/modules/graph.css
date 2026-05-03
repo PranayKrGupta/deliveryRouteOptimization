@@ -20,7 +20,8 @@
 
 .map-editor-card {
     display: flex;
-    gap: 32px;
+    flex-direction: column;
+    gap: 0;
 }
 
 .editor-section {
@@ -88,6 +89,5 @@
 .route-info strong { color: var(--text-main); }
 
 @media (max-width: 1200px) {
-    .map-editor-card { flex-direction: column; }
     .connection-section { border-left: none; border-top: 1px solid var(--card-border); padding-left: 0; padding-top: 32px; }
 }
